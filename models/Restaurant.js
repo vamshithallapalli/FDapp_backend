@@ -26,7 +26,7 @@ const restaurantSchema = new mongoose.Schema({
     type: [
       {
         type: String,
-        enum: ["south-indian", "north-indian", "chinese", "bakery"],
+        enum: ["south-indian", "north-indian", "chinese"],
       },
     ],
   },
@@ -45,7 +45,7 @@ const restaurantSchema = new mongoose.Schema({
       ref: "Merchant",
     },
   ],
-  products: [
+  product: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",

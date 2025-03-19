@@ -42,11 +42,13 @@ const merchantLogin = async (req, res) => {
     }
 
     const token = jwt.sign({ merchantId: merchant._id }, secretKey, {
-      expiresIn: "5h",
+      expiresIn: "1h",
     });
 
-    res.status(200).json({ message: "Login Successful", token });
-    console.log(email, "this is toke", token);
+    const merchantId = merchant._id;
+
+    res.status(200).json({ message: "Login Successful", token, merchantId });
+    console.log(email, "this is token", token);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
     console.log(error);
@@ -67,15 +69,24 @@ const getMerchantById = async (req, res) => {
   const merchantId = req.params.id;
 
   try {
-    const merchant = await Merchant.findById(merchantId).populate('restaurant');
+    const merchant = await Merchant.findById(merchantId).populate("restaurant");
     if (!merchant) {
       return res.status(404).json({ error: "Merchant not found" });
     }
-    res.status(200).json({ merchant });
+
+    const merchantrestaurantId = merchant.restaurant[0]._id;
+
+    return res.status(200).json({ merchantId, merchantrestaurantId, merchant });
+    console.log(merchant, merchantrestaurantId);
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
     console.log(error);
   }
 };
 
-module.exports = { merchantRegister, merchantLogin, getAllMerchants, getMerchantById };
+module.exports = {
+  merchantRegister,
+  merchantLogin,
+  getAllMerchants,
+  getMerchantById,
+};

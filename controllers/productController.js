@@ -1,6 +1,7 @@
 const Product = require("../models/Product");
 const multer = require("multer");
 const Restaurant = require("../models/Restaurant");
+const path = require("path");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -14,7 +15,9 @@ const upload = multer({ storage: storage });
 
 const addProduct = async (req, res) => {
   try {
-    const { productName, price, category, bestseller, description } = req.body;
+    const { productName, price, description } = req.body;
+    const category = JSON.parse(req.body.category);
+    const bestSeller = JSON.parse(req.body.bestSeller);
     const image = req.file ? req.file.filename : undefined;
 
     const restaurantId = req.params.restaurantId;
@@ -28,14 +31,14 @@ const addProduct = async (req, res) => {
       productName,
       price,
       category,
-      bestseller,
+      bestSeller,
       description,
       image,
       restaurant: restaurant._id,
     });
 
     const savedProduct = await product.save();
-    restaurant.products.push(savedProduct);
+    restaurant.product.push(savedProduct);
     await restaurant.save();
     res.status(200).json({ savedProduct });
   } catch (error) {
@@ -67,8 +70,15 @@ const deleteProductById = async (req, res) => {
     const deletedProduct = await Product.findByIdAndDelete(productId);
 
     if (!deletedProduct) {
-      return res.status(404).json({ error: "no product found" });
+      return res.status(404).json({ error: "No product found" });
     }
+
+    await Restaurant.updateMany(
+      { product: productId },
+      { $pull: { product: productId } }
+    );
+
+    res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
     console.log(error);
